@@ -7,8 +7,8 @@ This is the deployment runbook for the read-only Cashier stage-1 stack.
 - Docker Engine with the Docker Compose v2 plugin.
 - External Docker network may be used for a reverse proxy if needed.
 - Published images:
-  - `ghcr.io/sirily/cashier-sveltekit:latest`
-  - `ghcr.io/sirily/cashier-server-python:latest`
+  - `ghcr.io/sirily/cashier-sveltekit:${PWA_VERSION:-latest}`
+  - `ghcr.io/sirily/cashier-server-python:${SERVER_VERSION:-latest}`
 - Beancount file on the host:
   - `/absolute/path/to/main.bean` (replace with your real host path)
 - The `cashier-caddy` service is reachable at the host address/port defined by `CASHIER_HTTP_BIND` (default 127.0.0.1:8080).
@@ -24,11 +24,13 @@ Important values:
 
 ```env
 HOST_BEANCOUNT_FILE=/absolute/path/to/main.bean
+PWA_VERSION=sha-abcdef1234567890
+SERVER_VERSION=sha-123456abcdef7890
 CASHIER_HTTP_BIND=127.0.0.1:8080
 CASHIER_CORS_ORIGINS=
 ```
 
-Set `HOST_BEANCOUNT_FILE` to the absolute host path of your main Beancount file. Set `CASHIER_HTTP_BIND` to the host address and port Caddy should publish.
+Set `HOST_BEANCOUNT_FILE` to the absolute host path of your main Beancount file. Set `CASHIER_HTTP_BIND` to the host address and port Caddy should publish. Use `sha-*` image tags for `PWA_VERSION` and `SERVER_VERSION` when available.
 
 Do not change the Beancount mount to read-write in stage 1.
 
@@ -65,7 +67,7 @@ The script checks:
 - `/`
 - `/api/ping`
 - `/api/health`
-- `/api/reload`
+
 - `/api/infrastructure?file_path=main.bean`
 - `/api?query=accounts`
 
@@ -75,7 +77,6 @@ Manual checks:
 curl -fsS "http://127.0.0.1:8080/" >/dev/null
 curl -fsS "http://127.0.0.1:8080/api/ping"
 curl -fsS "http://127.0.0.1:8080/api/health"
-curl -fsS "http://127.0.0.1:8080/api/reload"
 curl -fsS "http://127.0.0.1:8080/api/infrastructure?file_path=main.bean" >/dev/null
 curl -fsS "http://127.0.0.1:8080/api?query=accounts" >/dev/null
 ```

@@ -1,6 +1,24 @@
 :80 {
     encode gzip zstd
 
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        Referrer-Policy strict-origin-when-cross-origin
+        Permissions-Policy "geolocation=(), microphone=()"
+    }
+
+    @reload path /api/reload
+    @loopback remote_ip 127.0.0.1 ::1
+
+    handle @reload {
+        handle @loopback {
+            uri strip_prefix /api
+            reverse_proxy cashier-server:3000
+        }
+        respond 403
+    }
+
     handle /api* {
         uri strip_prefix /api
         reverse_proxy cashier-server:3000

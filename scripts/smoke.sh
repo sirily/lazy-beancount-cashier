@@ -19,7 +19,7 @@ check() {
 check "/"
 check "/api/ping"
 check "/api/health"
-check "/api/reload"
+
 check "/api/infrastructure?file_path=main.bean"
 check "/api?query=accounts"
 
