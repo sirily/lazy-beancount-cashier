@@ -37,7 +37,7 @@ services:
       CASHIER_ENABLE_SHUTDOWN: ${CASHIER_ENABLE_SHUTDOWN:-false}
       CASHIER_CORS_ORIGINS: ${CASHIER_CORS_ORIGINS:-}
     volumes:
-      - ${LAZYBEAN_PATH:-/mnt/raid4t/homelab/appdata/lazybean}:/workspace:ro
+      - ${LAZYBEAN_PATH}:/workspace:ro
     networks:
       - cashier
     expose:

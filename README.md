@@ -22,8 +22,10 @@ This repository does **not** build Cashier application code. It wires together t
 The server reads the full Lazy Beancount book from:
 
 ```text
-/mnt/raid4t/homelab/appdata/lazybean/main.bean
+/absolute/path/to/lazybean/main.bean
 ```
+
+(where `/absolute/path/to/lazybean` is the value of `LAZYBEAN_PATH` in `.env`)
 
 inside the container as:
 

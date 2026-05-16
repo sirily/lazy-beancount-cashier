@@ -10,7 +10,7 @@ This is the deployment runbook for the read-only Cashier stage-1 stack.
   - `ghcr.io/sirily/cashier-sveltekit:latest`
   - `ghcr.io/sirily/cashier-server-python:latest`
 - Lazy Beancount data on the host:
-  - `/mnt/raid4t/homelab/appdata/lazybean/main.bean`
+  - `/absolute/path/to/lazybean/main.bean` (replace with your real host path)
 - Pangolin/Traefik route for `CASHIER_HOST` to the `cashier-caddy` service.
 
 ## Configure
@@ -24,10 +24,12 @@ Important values:
 
 ```env
 CASHIER_HOST=cashier.example.com
-LAZYBEAN_PATH=/mnt/raid4t/homelab/appdata/lazybean
+LAZYBEAN_PATH=/absolute/path/to/lazybean
 BEANCOUNT_FILE=/workspace/main.bean
 CASHIER_ENABLE_SHUTDOWN=false
 ```
+
+Set `LAZYBEAN_PATH` to the host directory containing your Beancount files (e.g. where `main.bean` is located).
 
 Do not change the Lazy Beancount mount to read-write in stage 1.
 
@@ -97,7 +99,7 @@ Keep these invariants until write-back is explicitly designed:
 
 ```yaml
 volumes:
-  - ${LAZYBEAN_PATH:-/mnt/raid4t/homelab/appdata/lazybean}:/workspace:ro
+  - ${LAZYBEAN_PATH}:/workspace:ro
 ```
 
 ```env

@@ -50,7 +50,7 @@ Do not rely on a relative `/api` URL in stage 1.
 Stage 1 does not prove server-side write-back. In particular, it does not append phone-created transactions to:
 
 ```text
-/mnt/raid4t/homelab/appdata/lazybean/manual_transactions...
+/absolute/path/to/lazybean/manual_transactions...
 ```
 
 That is stage 2 and requires a separate design for append, validation, rollback, and conflict handling.
