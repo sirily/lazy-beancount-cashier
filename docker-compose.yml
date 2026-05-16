@@ -1,0 +1,57 @@
+services:
+  cashier-caddy:
+    image: caddy:2.11.3-alpine
+    container_name: lazy-beancount-cashier-caddy
+    restart: unless-stopped
+    depends_on:
+      cashier-pwa:
+        condition: service_started
+      cashier-server:
+        condition: service_healthy
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    ports:
+      - "${CASHIER_HTTP_BIND:-127.0.0.1:8080}:80"
+    networks:
+      - cashier
+
+  cashier-pwa:
+    image: ghcr.io/sirily/cashier-sveltekit:${PWA_VERSION:-latest}
+    container_name: lazy-beancount-cashier-pwa
+    restart: unless-stopped
+    networks:
+      - cashier
+    expose:
+      - "8080"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  cashier-server:
+    image: ghcr.io/sirily/cashier-server-python:${SERVER_VERSION:-latest}
+    container_name: lazy-beancount-cashier-server
+    restart: unless-stopped
+    environment:
+      BEANCOUNT_FILE: /workspace/main.bean
+      CASHIER_ENABLE_SHUTDOWN: "false"
+      CASHIER_CORS_ORIGINS: ${CASHIER_CORS_ORIGINS:-}
+    volumes:
+      - ${HOST_BEANCOUNT_FILE:?HOST_BEANCOUNT_FILE must be set in .env}:/workspace/main.bean:ro
+    networks:
+      - cashier
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+networks:
+  cashier:
+    # Intentional: service healthchecks use loopback and do not need internet.
+    internal: true
