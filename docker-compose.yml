@@ -1,0 +1,57 @@
+services:
+  cashier-caddy:
+    image: caddy:2.11.3-alpine
+    container_name: lazy-beancount-cashier-caddy
+    restart: unless-stopped
+    depends_on:
+      cashier-pwa:
+        condition: service_started
+      cashier-server:
+        condition: service_started
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    networks:
+      - cashier
+      - traefik
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.lazy-beancount-cashier.rule=Host(`${CASHIER_HOST}`)
+      - traefik.http.routers.lazy-beancount-cashier.entrypoints=${TRAEFIK_ENTRYPOINT:-websecure}
+      - traefik.http.services.lazy-beancount-cashier.loadbalancer.server.port=80
+
+  cashier-pwa:
+    image: ${CASHIER_PWA_IMAGE:-ghcr.io/sirily/cashier-sveltekit:latest}
+    container_name: lazy-beancount-cashier-pwa
+    restart: unless-stopped
+    networks:
+      - cashier
+    expose:
+      - "8080"
+
+  cashier-server:
+    image: ${CASHIER_SERVER_IMAGE:-ghcr.io/sirily/cashier-server-python:latest}
+    container_name: lazy-beancount-cashier-server
+    restart: unless-stopped
+    environment:
+      BEANCOUNT_FILE: ${BEANCOUNT_FILE:-/workspace/main.bean}
+      CASHIER_ENABLE_SHUTDOWN: ${CASHIER_ENABLE_SHUTDOWN:-false}
+      CASHIER_CORS_ORIGINS: ${CASHIER_CORS_ORIGINS:-}
+    volumes:
+      - ${LAZYBEAN_PATH:-/mnt/raid4t/homelab/appdata/lazybean}:/workspace:ro
+    networks:
+      - cashier
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+networks:
+  cashier:
+    internal: true
+  traefik:
+    external: true
+    name: ${TRAEFIK_NETWORK:-traefik}

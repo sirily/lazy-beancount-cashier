@@ -1,0 +1,12 @@
+:80 {
+    encode gzip zstd
+
+    handle /api* {
+        uri strip_prefix /api
+        reverse_proxy cashier-server:3000
+    }
+
+    handle {
+        reverse_proxy cashier-pwa:8080
+    }
+}
