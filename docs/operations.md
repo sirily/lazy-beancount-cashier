@@ -69,12 +69,7 @@ docker compose --env-file .env exec cashier-server \
 
 ## Roll back image versions
 
-Pin image tags in `.env` and redeploy:
-
-```env
-CASHIER_PWA_IMAGE=ghcr.io/sirily/cashier-sveltekit:sha-...
-CASHIER_SERVER_IMAGE=ghcr.io/sirily/cashier-server-python:sha-...
-```
+Pin image tags in `docker-compose.yml` and redeploy:
 
 ```sh
 ./scripts/deploy.sh

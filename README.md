@@ -11,23 +11,15 @@ This repository does **not** build Cashier application code. It wires together t
 
 ```text
 [phone / Cashier PWA]
-   ↓ HTTPS + auth cookie
-[Pangolin → Traefik]
+   ↓
+[host port from CASHIER_HTTP_BIND]
    ↓
 [cashier-caddy]
    ├── /api/* → cashier-server:3000
    └── /*      → cashier-pwa:8080
 ```
 
-The server reads the full Lazy Beancount book from:
-
-```text
-/absolute/path/to/lazybean/main.bean
-```
-
-(where `/absolute/path/to/lazybean` is the value of `LAZYBEAN_PATH` in `.env`)
-
-inside the container as:
+The server reads the full Beancount book from the host path set by `HOST_BEANCOUNT_FILE` in `.env`, mounted inside the container as:
 
 ```text
 /workspace/main.bean
@@ -38,7 +30,7 @@ inside the container as:
 Stage 1 is intentionally **read-only sync**:
 
 - use existing server endpoints: `/`, `/ping`, `/health`, `/reload`, `/infrastructure?file_path=...`;
-- mount Lazy Beancount as read-only: `:/workspace:ro`;
+- mount the Beancount file read-only: `${HOST_BEANCOUNT_FILE}:/workspace/main.bean:ro`;
 - set `BEANCOUNT_FILE=/workspace/main.bean`;
 - do **not** add `POST /xact`;
 - do **not** write to `manual_transactions`;
@@ -62,7 +54,7 @@ Phone-created/offline transactions and server-side write-back belong to a later 
 
 ```sh
 cp .env.example .env
-# edit CASHIER_HOST if needed
+# edit HOST_BEANCOUNT_FILE and optionally CASHIER_HTTP_BIND
 
 docker compose --env-file .env config
 docker compose --env-file .env pull
@@ -72,10 +64,10 @@ docker compose --env-file .env up -d
 Run smoke tests:
 
 ```sh
-./scripts/smoke.sh "https://cashier.example.com"
+./scripts/smoke.sh "http://127.0.0.1:8080"
 ```
 
-For local checks against a published port or tunnel, pass the corresponding base URL.
+For checks against another published address or tunnel, pass the corresponding base URL.
 
 ## Cashier PWA setting
 

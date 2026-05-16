@@ -7,7 +7,7 @@ Use this document to validate the stage-1 goal: Cashier PWA can sync from the se
 1. Open the public Cashier URL on the phone:
 
    ```text
-   https://cashier.example.com
+    http://127.0.0.1:8080
    ```
 
 2. Install it as a PWA from the browser menu.
@@ -18,7 +18,7 @@ Use this document to validate the stage-1 goal: Cashier PWA can sync from the se
 Set the Cashier sync server URL to the absolute API URL:
 
 ```text
-https://cashier.example.com/api
+http://127.0.0.1:8080/api
 ```
 
 Do not rely on a relative `/api` URL in stage 1.
@@ -31,9 +31,9 @@ Do not rely on a relative `/api` URL in stage 1.
 4. If sync fails, check:
 
    ```sh
-   curl -fsS "https://cashier.example.com/api/ping"
-   curl -fsS "https://cashier.example.com/api/health"
-   curl -fsS "https://cashier.example.com/api?query=accounts"
+curl -fsS "http://127.0.0.1:8080/api/ping"
+curl -fsS "http://127.0.0.1:8080/api/health"
+curl -fsS "http://127.0.0.1:8080/api?query=accounts"
    ```
 
 ## Offline test
@@ -47,10 +47,6 @@ Do not rely on a relative `/api` URL in stage 1.
 
 ## What stage 1 does not prove
 
-Stage 1 does not prove server-side write-back. In particular, it does not append phone-created transactions to:
-
-```text
-/absolute/path/to/lazybean/manual_transactions...
-```
+Stage 1 does not prove server-side write-back.
 
 That is stage 2 and requires a separate design for append, validation, rollback, and conflict handling.

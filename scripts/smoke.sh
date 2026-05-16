@@ -4,19 +4,7 @@ set -euo pipefail
 BASE_URL="${1:-}"
 
 if [[ -z "$BASE_URL" ]]; then
-  if [[ -f .env ]]; then
-    # shellcheck disable=SC1091
-    set -a
-    source .env
-    set +a
-    if [[ -n "${CASHIER_HOST:-}" ]]; then
-      BASE_URL="https://${CASHIER_HOST}"
-    fi
-  fi
-fi
-
-if [[ -z "$BASE_URL" ]]; then
-  echo "Usage: $0 https://cashier.example.com" >&2
+  echo "Usage: $0 http://127.0.0.1:8080" >&2
   exit 1
 fi
 

@@ -5,13 +5,13 @@ This is the deployment runbook for the read-only Cashier stage-1 stack.
 ## Requirements
 
 - Docker Engine with the Docker Compose v2 plugin.
-- External Docker network used by Pangolin/Traefik, default: `traefik`.
+- External Docker network may be used for a reverse proxy if needed.
 - Published images:
   - `ghcr.io/sirily/cashier-sveltekit:latest`
   - `ghcr.io/sirily/cashier-server-python:latest`
-- Lazy Beancount data on the host:
-  - `/absolute/path/to/lazybean/main.bean` (replace with your real host path)
-- Pangolin/Traefik route for `CASHIER_HOST` to the `cashier-caddy` service.
+- Beancount file on the host:
+  - `/absolute/path/to/main.bean` (replace with your real host path)
+- The `cashier-caddy` service is reachable at the host address/port defined by `CASHIER_HTTP_BIND` (default 127.0.0.1:8080).
 
 ## Configure
 
@@ -23,15 +23,14 @@ $EDITOR .env
 Important values:
 
 ```env
-CASHIER_HOST=cashier.example.com
-LAZYBEAN_PATH=/absolute/path/to/lazybean
-BEANCOUNT_FILE=/workspace/main.bean
-CASHIER_ENABLE_SHUTDOWN=false
+HOST_BEANCOUNT_FILE=/absolute/path/to/main.bean
+CASHIER_HTTP_BIND=127.0.0.1:8080
+CASHIER_CORS_ORIGINS=
 ```
 
-Set `LAZYBEAN_PATH` to the host directory containing your Beancount files (e.g. where `main.bean` is located).
+Set `HOST_BEANCOUNT_FILE` to the absolute host path of your main Beancount file. Set `CASHIER_HTTP_BIND` to the host address and port Caddy should publish.
 
-Do not change the Lazy Beancount mount to read-write in stage 1.
+Do not change the Beancount mount to read-write in stage 1.
 
 ## Validate Compose
 
@@ -55,10 +54,10 @@ Or use:
 
 ## Smoke tests
 
-External smoke tests:
+Smoke tests:
 
 ```sh
-./scripts/smoke.sh "https://cashier.example.com"
+./scripts/smoke.sh "http://127.0.0.1:8080"
 ```
 
 The script checks:
@@ -73,12 +72,12 @@ The script checks:
 Manual checks:
 
 ```sh
-curl -fsS "https://cashier.example.com/" >/dev/null
-curl -fsS "https://cashier.example.com/api/ping"
-curl -fsS "https://cashier.example.com/api/health"
-curl -fsS "https://cashier.example.com/api/reload"
-curl -fsS "https://cashier.example.com/api/infrastructure?file_path=main.bean" >/dev/null
-curl -fsS "https://cashier.example.com/api?query=accounts" >/dev/null
+curl -fsS "http://127.0.0.1:8080/" >/dev/null
+curl -fsS "http://127.0.0.1:8080/api/ping"
+curl -fsS "http://127.0.0.1:8080/api/health"
+curl -fsS "http://127.0.0.1:8080/api/reload"
+curl -fsS "http://127.0.0.1:8080/api/infrastructure?file_path=main.bean" >/dev/null
+curl -fsS "http://127.0.0.1:8080/api?query=accounts" >/dev/null
 ```
 
 ## Internal checks
@@ -99,7 +98,7 @@ Keep these invariants until write-back is explicitly designed:
 
 ```yaml
 volumes:
-  - ${LAZYBEAN_PATH}:/workspace:ro
+  - ${HOST_BEANCOUNT_FILE}:/workspace/main.bean:ro
 ```
 
 ```env

@@ -10,17 +10,13 @@ services:
         condition: service_started
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    ports:
+      - "${CASHIER_HTTP_BIND:-127.0.0.1:8080}:80"
     networks:
       - cashier
-      - traefik
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.lazy-beancount-cashier.rule=Host(`${CASHIER_HOST}`)
-      - traefik.http.routers.lazy-beancount-cashier.entrypoints=${TRAEFIK_ENTRYPOINT:-websecure}
-      - traefik.http.services.lazy-beancount-cashier.loadbalancer.server.port=80
 
   cashier-pwa:
-    image: ${CASHIER_PWA_IMAGE:-ghcr.io/sirily/cashier-sveltekit:latest}
+    image: ghcr.io/sirily/cashier-sveltekit:latest
     container_name: lazy-beancount-cashier-pwa
     restart: unless-stopped
     networks:
@@ -29,15 +25,15 @@ services:
       - "8080"
 
   cashier-server:
-    image: ${CASHIER_SERVER_IMAGE:-ghcr.io/sirily/cashier-server-python:latest}
+    image: ghcr.io/sirily/cashier-server-python:latest
     container_name: lazy-beancount-cashier-server
     restart: unless-stopped
     environment:
-      BEANCOUNT_FILE: ${BEANCOUNT_FILE:-/workspace/main.bean}
-      CASHIER_ENABLE_SHUTDOWN: ${CASHIER_ENABLE_SHUTDOWN:-false}
+      BEANCOUNT_FILE: /workspace/main.bean
+      CASHIER_ENABLE_SHUTDOWN: "false"
       CASHIER_CORS_ORIGINS: ${CASHIER_CORS_ORIGINS:-}
     volumes:
-      - ${LAZYBEAN_PATH}:/workspace:ro
+      - ${HOST_BEANCOUNT_FILE}:/workspace/main.bean:ro
     networks:
       - cashier
     expose:
@@ -52,6 +48,3 @@ services:
 networks:
   cashier:
     internal: true
-  traefik:
-    external: true
-    name: ${TRAEFIK_NETWORK:-traefik}
