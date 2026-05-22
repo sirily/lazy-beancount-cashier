@@ -57,7 +57,7 @@ docker compose --env-file .env exec cashier-caddy \
 
 ```sh
 docker compose --env-file .env exec cashier-server \
-  sh -lc 'id && ls -lah /workspace && test -f /workspace/main.bean && echo main.bean found'
+  sh -lc 'id && ls -lah /workspace && test -f /workspace && echo main.bean found'
 ```
 
 The mount must remain read-only in stage 1:
@@ -83,5 +83,5 @@ Do not enable write-back by operational workaround. The future write-back stage 
 - design a server append endpoint or export/import flow;
 - mount only the required target as writable;
 - append only to `manual_transactions...`;
-- validate with `bean-check /workspace/main.bean`;
+- validate with `bean-check /workspace`;
 - rollback on validation failure.

@@ -19,10 +19,10 @@ This repository does **not** build Cashier application code. It wires together t
    └── /*      → cashier-pwa:8080
 ```
 
-The server reads the full Beancount book from the host path set by `HOST_BEANCOUNT_FILE` in `.env`, mounted inside the container as:
+The server reads the full Beancount workspace from the host directory set by `HOST_BEANCOUNT_WORKSPACE` in `.env`, mounted inside the container as:
 
 ```text
-/workspace/main.bean
+/workspace
 ```
 
 ## Stage 1 scope
@@ -30,8 +30,8 @@ The server reads the full Beancount book from the host path set by `HOST_BEANCOU
 Stage 1 is intentionally **read-only sync**:
 
 - use existing server endpoints: `/`, `/ping`, `/health`, `/reload`, `/infrastructure?file_path=...`;
-- mount the Beancount file read-only: `${HOST_BEANCOUNT_FILE}:/workspace/main.bean:ro`;
-- set `BEANCOUNT_FILE=/workspace/main.bean`;
+- mount the Beancount file read-only: `${HOST_BEANCOUNT_WORKSPACE}:/workspace:ro`;
+- set `BEANCOUNT_FILE=/workspace`;
 - do **not** add `POST /xact`;
 - do **not** write to `manual_transactions`;
 - do **not** mount `/workspace` read-write.
@@ -54,7 +54,7 @@ Phone-created/offline transactions and server-side write-back belong to a later 
 
 ```sh
 cp .env.example .env
-# edit HOST_BEANCOUNT_FILE and optionally CASHIER_HTTP_BIND
+# edit HOST_BEANCOUNT_WORKSPACE and optionally CASHIER_HTTP_BIND
 
 docker compose --env-file .env config
 docker compose --env-file .env pull

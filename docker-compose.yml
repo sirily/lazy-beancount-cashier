@@ -39,7 +39,7 @@ services:
       CASHIER_ENABLE_SHUTDOWN: "false"
       CASHIER_CORS_ORIGINS: ${CASHIER_CORS_ORIGINS:-}
     volumes:
-      - ${HOST_BEANCOUNT_FILE:?HOST_BEANCOUNT_FILE must be set in .env}:/workspace/main.bean:ro
+      - ${HOST_BEANCOUNT_WORKSPACE:?HOST_BEANCOUNT_WORKSPACE must be set in .env}:/workspace:ro
     networks:
       - cashier
     expose:
@@ -53,5 +53,6 @@ services:
 
 networks:
   cashier:
-    # Intentional: service healthchecks use loopback and do not need internet.
-    internal: true
+    # The stack can be put behind a higher-level reverse proxy by attaching
+    # cashier-caddy to that proxy outside this repository (override/homelab layer).
+    internal: false
