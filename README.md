@@ -1,6 +1,6 @@
 # lazy-beancount-cashier
 
-Deployment repository for the self-hosted Cashier stage-1 stack.
+Deployment repository for the self-hosted Cashier stack.
 
 This repository does **not** build Cashier application code. It wires together the two prebuilt images:
 
@@ -25,18 +25,25 @@ The server reads the full Beancount workspace from the host directory set by `HO
 /workspace
 ```
 
-## Stage 1 scope
+## Stage 1 and Stage 2 scope
 
-Stage 1 is intentionally **read-only sync**:
+Stage 1 is read-only offline-ledger sync:
 
 - use existing server endpoints: `/`, `/ping`, `/health`, `/reload`, `/infrastructure?file_path=...`;
-- mount the Beancount file read-only: `${HOST_BEANCOUNT_WORKSPACE}:/workspace:ro`;
-- set `BEANCOUNT_FILE=/workspace`;
-- do **not** add `POST /xact`;
-- do **not** write to `manual_transactions`;
-- do **not** mount `/workspace` read-write.
+- mount the Beancount workspace read-only: `${HOST_BEANCOUNT_WORKSPACE}:/workspace:ro`;
+- set `BEANCOUNT_FILE=/workspace/main.bean`.
 
-Phone-created/offline transactions and server-side write-back belong to a later stage after the PWA sync/offline flow is validated.
+Stage 2 adds exactly one narrow writeback channel for PWA-created manual transactions:
+
+- expose the server `POST /xact` endpoint through Caddy as `/api/xact`;
+- keep the full Beancount workspace read-only;
+- bind-mount only the configured manual transactions file read-write:
+  `${HOST_BEANCOUNT_MANUAL_TRANSACTIONS_FILE}:/workspace/manual_transactions.bean:rw`;
+- set `BEANCOUNT_MANUAL_TRANSACTIONS_FILE=/workspace/manual_transactions.bean`;
+- ensure `main.bean` includes `manual_transactions.bean` exactly once;
+- ensure the mounted file is writable by the server container runtime user. The current `cashier-server-python` image runs as uid/gid `999:999`.
+
+Do **not** mount the whole `/workspace` read-write. Stage 2 is not a general Beancount mutation API; only the single manual transactions file is writable.
 
 ## Files
 

@@ -1,6 +1,6 @@
 # Deploy
 
-This is the deployment runbook for the read-only Cashier stage-1 stack.
+This is the deployment runbook for the Cashier stack, including Stage 1 read-only sync and the Stage 2 single-file manual transaction writeback channel.
 
 ## Requirements
 
@@ -24,15 +24,24 @@ Important values:
 
 ```env
 HOST_BEANCOUNT_WORKSPACE=/tmp/cashier-beancount-workspace
+HOST_BEANCOUNT_MANUAL_TRANSACTIONS_FILE=/tmp/cashier-beancount-workspace/manual_transactions.bean
 PWA_VERSION=sha-abcdef1234567890
 SERVER_VERSION=sha-123456abcdef7890
 CASHIER_HTTP_BIND=127.0.0.1:8080
 CASHIER_CORS_ORIGINS=
 ```
 
-Set `HOST_BEANCOUNT_WORKSPACE` to the absolute host directory of your main Beancount file. Set `CASHIER_HTTP_BIND` to the host address and port Caddy should publish. Use `sha-*` image tags for `PWA_VERSION` and `SERVER_VERSION` when available.
+Set `HOST_BEANCOUNT_WORKSPACE` to the absolute host directory of your main Beancount file. Set `HOST_BEANCOUNT_MANUAL_TRANSACTIONS_FILE` to the one writable manual transaction file included by `main.bean`. Set `CASHIER_HTTP_BIND` to the host address and port Caddy should publish. Use `sha-*` image tags for `PWA_VERSION` and `SERVER_VERSION` when available.
 
-Do not change the Beancount mount to read-write in stage 1.
+For Stage 2 writeback, create the manual transactions file before deploying and make it writable by the server container runtime user. The current `cashier-server-python` image runs as uid/gid `999:999`:
+
+```sh
+touch "$HOST_BEANCOUNT_MANUAL_TRANSACTIONS_FILE"
+chown 999:999 "$HOST_BEANCOUNT_MANUAL_TRANSACTIONS_FILE"
+chmod 664 "$HOST_BEANCOUNT_MANUAL_TRANSACTIONS_FILE"
+```
+
+Do not change the full Beancount workspace mount to read-write. Only `manual_transactions.bean` is writable.
 
 ## Validate Compose
 
