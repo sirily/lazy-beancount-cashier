@@ -36,10 +36,12 @@ services:
     restart: unless-stopped
     environment:
       BEANCOUNT_FILE: /workspace/main.bean
+      BEANCOUNT_MANUAL_TRANSACTIONS_FILE: /workspace/manual_transactions.bean
       CASHIER_ENABLE_SHUTDOWN: "false"
       CASHIER_CORS_ORIGINS: ${CASHIER_CORS_ORIGINS:-}
     volumes:
       - ${HOST_BEANCOUNT_WORKSPACE:?HOST_BEANCOUNT_WORKSPACE must be set in .env}:/workspace:ro
+      - ${HOST_BEANCOUNT_MANUAL_TRANSACTIONS_FILE:?HOST_BEANCOUNT_MANUAL_TRANSACTIONS_FILE must be set in .env}:/workspace/manual_transactions.bean:rw
     networks:
       - cashier
     expose:
