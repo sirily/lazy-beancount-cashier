@@ -27,11 +27,12 @@ HOST_BEANCOUNT_WORKSPACE=/tmp/cashier-beancount-workspace
 HOST_BEANCOUNT_MANUAL_TRANSACTIONS_FILE=/tmp/cashier-beancount-workspace/manual_transactions.bean
 PWA_VERSION=sha-abcdef1234567890
 SERVER_VERSION=sha-123456abcdef7890
+CASHIER_API_TOKEN=replace-with-a-long-random-token
 CASHIER_HTTP_BIND=127.0.0.1:8080
 CASHIER_CORS_ORIGINS=
 ```
 
-Set `HOST_BEANCOUNT_WORKSPACE` to the absolute host directory of your main Beancount file. Set `HOST_BEANCOUNT_MANUAL_TRANSACTIONS_FILE` to the one writable manual transaction file included by `main.bean`. Set `CASHIER_HTTP_BIND` to the host address and port Caddy should publish. Use `sha-*` image tags for `PWA_VERSION` and `SERVER_VERSION` when available.
+Set `HOST_BEANCOUNT_WORKSPACE` to the absolute host directory of your main Beancount file. Set `HOST_BEANCOUNT_MANUAL_TRANSACTIONS_FILE` to the one writable manual transaction file included by `main.bean`. Set `CASHIER_HTTP_BIND` to the host address and port Caddy should publish. Generate `CASHIER_API_TOKEN` with at least 32 random bytes (`openssl rand -hex 32`) and enter the same value in the PWA synchronization settings. Use `sha-*` image tags for `PWA_VERSION` and `SERVER_VERSION` when available.
 
 For Stage 2 writeback, create the manual transactions file before deploying and make it writable by the server container runtime user. The current `cashier-server-python` image runs as uid/gid `999:999`:
 
@@ -68,7 +69,7 @@ Or use:
 Smoke tests:
 
 ```sh
-./scripts/smoke.sh "http://127.0.0.1:8080"
+CASHIER_API_TOKEN="<same token as deployment .env>" ./scripts/smoke.sh "http://127.0.0.1:8080"
 ```
 
 The script checks:
@@ -78,16 +79,16 @@ The script checks:
 - `/api/health`
 
 - `/api/infrastructure?file_path=main.bean`
-- `/api?query=accounts`
+- `/api?query=SELECT%20account%20FROM%20accounts`
 
 Manual checks:
 
 ```sh
 curl -fsS "http://127.0.0.1:8080/" >/dev/null
-curl -fsS "http://127.0.0.1:8080/api/ping"
+curl -fsS -H "Authorization: Bearer $CASHIER_API_TOKEN" "http://127.0.0.1:8080/api/ping"
 curl -fsS "http://127.0.0.1:8080/api/health"
-curl -fsS "http://127.0.0.1:8080/api/infrastructure?file_path=main.bean" >/dev/null
-curl -fsS "http://127.0.0.1:8080/api?query=accounts" >/dev/null
+curl -fsS -H "Authorization: Bearer $CASHIER_API_TOKEN" "http://127.0.0.1:8080/api/infrastructure?file_path=main.bean" >/dev/null
+curl -fsS -H "Authorization: Bearer $CASHIER_API_TOKEN" "http://127.0.0.1:8080/api?query=SELECT%20account%20FROM%20accounts" >/dev/null
 ```
 
 ## Internal checks
