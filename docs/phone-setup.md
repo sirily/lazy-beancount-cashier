@@ -23,6 +23,11 @@ http://127.0.0.1:8080/api
 
 Do not rely on a relative `/api` URL in stage 1.
 
+Enter the value of `CASHIER_API_TOKEN` from the deployment `.env` in the
+**API token** field. The PWA stores it in its local IndexedDB settings and sends
+it as an `Authorization: Bearer …` header on Cashier API requests. The token is
+excluded from Cashier settings backups.
+
 ## Online sync test
 
 1. Confirm that the phone is online.
@@ -31,9 +36,9 @@ Do not rely on a relative `/api` URL in stage 1.
 4. If sync fails, check:
 
    ```sh
-curl -fsS "http://127.0.0.1:8080/api/ping"
+curl -fsS -H "Authorization: Bearer $CASHIER_API_TOKEN" "http://127.0.0.1:8080/api/ping"
 curl -fsS "http://127.0.0.1:8080/api/health"
-curl -fsS "http://127.0.0.1:8080/api?query=accounts"
+curl -fsS -H "Authorization: Bearer $CASHIER_API_TOKEN" "http://127.0.0.1:8080/api?query=SELECT%20account%20FROM%20accounts"
    ```
 
 ## Offline test

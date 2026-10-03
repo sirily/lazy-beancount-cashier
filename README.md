@@ -42,6 +42,7 @@ Stage 2 adds exactly one narrow writeback channel for PWA-created manual transac
 - set `BEANCOUNT_MANUAL_TRANSACTIONS_FILE=/workspace/manual_transactions.bean`;
 - ensure `main.bean` includes `manual_transactions.bean` exactly once;
 - ensure the mounted file is writable by the server container runtime user. The current `cashier-server-python` image runs as uid/gid `999:999`.
+- require the deployment-scoped bearer token configured by `CASHIER_API_TOKEN` for every API route except `/health`.
 
 Do **not** mount the whole `/workspace` read-write. Stage 2 is not a general Beancount mutation API; only the single manual transactions file is writable.
 
@@ -61,7 +62,7 @@ Do **not** mount the whole `/workspace` read-write. Stage 2 is not a general Bea
 
 ```sh
 cp .env.example .env
-# edit HOST_BEANCOUNT_WORKSPACE and optionally CASHIER_HTTP_BIND
+# edit HOST_BEANCOUNT_WORKSPACE, CASHIER_API_TOKEN, and optionally CASHIER_HTTP_BIND
 
 docker compose --env-file .env config
 docker compose --env-file .env pull
@@ -71,7 +72,7 @@ docker compose --env-file .env up -d
 Run smoke tests:
 
 ```sh
-./scripts/smoke.sh "http://127.0.0.1:8080"
+CASHIER_API_TOKEN="<same token as deployment .env>" ./scripts/smoke.sh "http://127.0.0.1:8080"
 ```
 
 For checks against another published address or tunnel, pass the corresponding base URL.
